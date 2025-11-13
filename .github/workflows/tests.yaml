@@ -1,0 +1,96 @@
+name: Dynamic Submodule Test Runner
+
+on:
+   push:
+      branches:
+         - develop
+
+jobs:
+   # 1. SETUP JOB: Installs all dependencies and caches the environment
+   setup_env:
+      runs-on: ubuntu-latest
+      outputs:
+         # We no longer use this conditional output directly, but keep it for structure
+         env_ready: true
+
+      steps:
+         -  name: Checkout Code and Submodules
+            uses: actions/checkout@v4
+            with:
+               submodules: true
+               token: ${{ secrets.CAMML_READ_TOKEN }}
+
+         -  name: Set up Python
+            uses: actions/setup-python@v5
+            with:
+               python-version: '3.13'
+
+         -  name: Generate Submodule Hash Key
+            id: submodule_key_gen
+            run: |
+               SUBMODULE_HASHES=$(git submodule status \
+                   | sed 's/^[ +-]//' \
+                   | awk '{print $1}' \
+                   | tr '\n' '_')  
+               echo "key=$SUBMODULE_HASHES" >> $GITHUB_OUTPUT
+
+         -  name: Cache Python dependencies
+            uses: actions/cache@v4
+            id: cache-venv
+            with:
+               path: |
+                  ${{ env.pythonLocation }}/lib/python*/site-packages
+                  ${{ env.pythonLocation }}/bin
+               # Key construction is crucial for consistency
+               key: ${{ runner.os }}-python-3.13-${{ steps.submodule_key_gen.outputs.key }}
+
+         -  name: Install All Submodules (If cache miss)
+            # Conditional logic now works correctly
+            if: steps.cache-venv.outputs.cache-hit != 'true'
+            run: |
+               echo "Installing ALL interdependent codes..."
+               pip install -e "./reax[dev]" -e "./tensorial[dev]" -e "./e3md[dev]" -e "./e3response[dev]" -e "./e3gen[dev]"
+
+   # 2. TEST JOB: Runs tests in parallel using the cached environment
+   test_submodules:
+      runs-on: ubuntu-latest
+      needs: setup_env
+
+      strategy:
+         fail-fast: false          # ✅ Disable stopping early
+         matrix:
+            submodule_path: [ reax, tensorial, e3md, e3response, e3gen ]
+
+      steps:
+         -  name: Checkout Code (Minimal checkout for file access)
+            uses: actions/checkout@v4
+            with:
+               submodules: true
+               token: ${{ secrets.CAMML_READ_TOKEN }}
+
+         -  name: Set up Python
+            uses: actions/setup-python@v5
+            with:
+               python-version: '3.13'
+
+         -  name: Generate Submodule Hash Key for Restore
+            id: submodule_key_restore
+            run: |
+               SUBMODULE_HASHES=$(git submodule status \
+                   | sed 's/^[ +-]//' \
+                   | awk '{print $1}' \
+                   | tr '\n' '_')  
+               echo "key=$SUBMODULE_HASHES" >> $GITHUB_OUTPUT
+
+         -  name: Restore Cached Dependencies
+            uses: actions/cache@v4
+            with:
+               path: |
+                  ${{ env.pythonLocation }}/lib/python*/site-packages
+                  ${{ env.pythonLocation }}/bin
+               key: ${{ runner.os }}-python-3.13-${{ steps.submodule_key_restore.outputs.key }}
+
+         -  name: Run Test for ${{ matrix.submodule_path }}
+            run: |
+               echo "Running tests for ${{ matrix.submodule_path }}..."
+               pytest ./${{ matrix.submodule_path }}/test

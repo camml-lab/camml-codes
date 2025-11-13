@@ -1,0 +1,21 @@
+[submodule "reax"]
+	path = reax
+	url = https://github.com/camml-lab/reax.git
+	branch = develop
+[submodule "tensorial"]
+	path = tensorial
+	url = https://github.com/camml-lab/tensorial.git
+	branch = develop
+[submodule "e3md"]
+	path = e3md
+	url = https://github.com/camml-lab/e3md.git
+	branch = develop
+[submodule "e3response"]
+	path = e3response
+	url = https://github.com/camml-lab/e3response.git
+	branch = develop
+[submodule "e3gen"]
+	path = e3gen
+	url = https://github.com/camml-lab/e3gen.git
+	branch = develop
+
