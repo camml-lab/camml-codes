@@ -1,6 +1,12 @@
 # Welcome to CAMML codes
 
 [![Build Status](https://github.com/camml-lab/camml-codes/actions/workflows/tests.yaml/badge.svg)](https://github.com/camml-lab/camml-codes/actions)
+![reax](https://img.shields.io/github/actions/workflow/status/camml-lab/camml-codes/test.yml?job=test_submodules%20(submodule_path%3A%20reax))
+![tensorial](https://img.shields.io/github/actions/workflow/status/camml-lab/camml-codes/test.yml?job=test_submodules%20(submodule_path%3A%20tensorial))
+![e3md](https://img.shields.io/github/actions/workflow/status/camml-lab/camml-codes/test.yml?job=test_submodules%20(submodule_path%3A%20e3md))
+![e3response](https://img.shields.io/github/actions/workflow/status/camml-lab/camml-codes/test.yml?job=test_submodules%20(submodule_path%3A%20e3response))
+![e3gen](https://img.shields.io/github/actions/workflow/status/camml-lab/camml-codes/test.yml?job=test_submodules%20(submodule_path%3A%20e3gen))
+
 
 This is our repository that groups together the various codes developed in the CAMML group.
 
