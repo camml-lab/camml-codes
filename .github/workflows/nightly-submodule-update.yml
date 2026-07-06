@@ -1,0 +1,51 @@
+name: Nightly Submodule Update
+
+on:
+  schedule:
+    # Runs at 00:00 UTC every single night (Adjust cron time as needed)
+    - cron: '0 0 * * *'
+  # Allows you to trigger it manually from the Actions tab for testing
+  workflow_dispatch:
+
+jobs:
+  update-submodules:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Checkout repository using your administrative token so it has push rights
+      - name: Checkout Code and Submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          token: ${{ secrets.CAMML_READ_TOKEN }}
+          fetch-depth: 0 # Fetches full history so git push works cleanly
+
+      # 2. Set up uv so your bash script can run 'uv sync' successfully
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: '3.13'
+
+      # 3. Configure a Git user for the automated commit
+      - name: Configure Git Bot
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      # 4. Make sure your script is executable and run the update routine
+      - name: Run Submodule Update Script
+        run: |
+          chmod +x ./codes
+          ./codes update
+
+      # 5. Check if submodules or uv.lock shifted, then conditionally commit and push
+      - name: Commit and Push Updates
+        run: |
+          # Check if there are modified tracks or changes in the index
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Changes detected! Committing submodule references and lockfile updates..."
+            git add .
+            git commit -m "chore(deps): nightly automated submodule and lockfile update"
+            git push origin HEAD:${{ github.event.repository.default_branch }}
+          else
+            echo "No submodule updates found. Repository is already up to date."
+          fi
