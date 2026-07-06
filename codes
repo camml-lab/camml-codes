@@ -56,6 +56,16 @@ update_submodules() {
     # using a rebase operation instead of a merge.
     if git submodule update --remote --rebase; then
         echo "✅ All submodules updated successfully using rebase."
+
+        # Check for uv and sync if available
+        if command -v uv >/dev/null 2>&1; then
+            echo "🔄 Synchronizing dependencies with uv..."
+            if uv sync --all-packages --extra dev; then
+                echo "✅ Successfully synchronized with uv."
+            else
+                echo "❌ ERROR: Failed to synchronize with uv."
+            fi
+        fi
     else
         echo "❌ ERROR: Failed to update one or more submodules via rebase."
         echo "Please check permissions and network connectivity, and resolve any rebase conflicts."
