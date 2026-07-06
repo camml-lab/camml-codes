@@ -1,0 +1,22 @@
+[project]
+name = "camml-workspace"
+version = "0.1.0"
+description = "Combined workspace for CAMML codes"
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.uv.workspace]
+members = [
+    "reax",
+    "tensorial",
+    "e3md",
+    "e3response",
+    "e3gen",
+]
+
+[tool.uv.sources]
+reax = { workspace = true }
+tensorial = { workspace = true }
+e3md = { workspace = true }
+e3response = { workspace = true }
+e3gen = { workspace = true }
